@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}{{ course.code }} - {{ course.title }}{% endblock %}
+
+{% block content %}
+<!-- Header + Breadcrumb + CSV Button -->
+<div class="d-flex justify-content-between align-items-start mb-5">
+    <div>
+        <h1 class="text-primary fw-bold mb-2">
+            <i class="bi bi-book me-2"></i> {{ course.code }} — {{ course.title }}
+        </h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{{ url_for('admin_faculties') }}">Faculties</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('admin_faculty_detail', faculty_id=course.department_rel.faculty.id) }}">{{ course.department_rel.faculty.name }}</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('admin_department_detail', department_id=course.department_id) }}">{{ course.department_rel.name }}</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('admin_level_detail', department_id=course.department_id, level=course.level) }}">{{ course.level * 100 }} Level</a></li>
+                <li class="breadcrumb-item active">{{ course.code }}</li>
+            </ol>
+        </nav>
+    </div>
+    <a href="{{ url_for('admin_course_attendance_report', course_id=course.id) }}"
+       class="btn btn-success">
+        <i class="bi bi-download me-2"></i> Export CSV
+    </a>
+</div>
+
+<!-- Compact Info Bar -->
+<div class="bg-light border rounded-3 p-4 mb-5">
+    <div class="row text-center text-md-start g-4">
+        <div class="col-md-3 col-6">
+            <div class="small text-muted">Lecturer</div>
+            <div class="fw-bold text-primary">{{ course.lecturer.name }}</div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="small text-muted">Enrolled Students</div>
+            <div class="fw-bold text-success">{{ enrolled_students }}</div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="small text-muted">Department</div>
+            <div class="fw-bold">{{ course.department_rel.name }}</div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="small text-muted">Level</div>
+            <div class="fw-bold text-info">{{ course.level * 100 }} Level</div>
+        </div>
+    </div>
+</div>
+
+<!-- Attendance Summary -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white border-bottom">
+        <h4 class="mb-0 text-primary fw-bold">
+            <i class="bi bi-table me-2"></i> Attendance Summary by Session
+        </h4>
+    </div>
+    <div class="card-body p-0">
+        {% if sessions %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Date</th>
+                        <th class="text-center">Present</th>
+                        <th class="text-center">Enrolled</th>
+                        <th class="text-center">Percentage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for session in sessions %}
+                    {% set present_count = session.records.count() %}
+                    {% set percentage = (present_count / enrolled_students * 100)|round(1) if enrolled_students > 0 else 0 %}
+                    <tr>
+                        <td class="ps-4">
+                            <strong>{{ session.date.strftime('%a, %d %b %Y') }}</strong>
+                        </td>
+                        <td class="text-center fw-bold">{{ present_count }}</td>
+                        <td class="text-center">{{ enrolled_students }}</td>
+                        <td class="text-center">
+                            <span class="badge fs-6 px-3 py-2 bg-{{ 'success' if percentage >= 80 else 'warning' if percentage >= 70 else 'danger' }}">
+                                {{ percentage }}%
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-calendar-x display-4 text-muted mb-4"></i>
+            <h5 class="text-muted">No attendance sessions yet</h5>
+            <p class="text-muted">The lecturer has not started taking attendance for this course.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

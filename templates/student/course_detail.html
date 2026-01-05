@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}{{ course.code }} - Attendance{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-start mb-5">
+        <div>
+            <h1 class="fw-bold text-primary mb-2">
+                <i class="bi bi-journal-text me-2"></i> {{ course.code }} — {{ course.title }}
+            </h1>
+            <p class="text-muted mb-0">
+                <i class="bi bi-person-fill me-1"></i> {{ course.lecturer.name }}
+            </p>
+            <nav aria-label="breadcrumb" class="mt-2">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('student_dashboard') }}">My Courses</a></li>
+                    <li class="breadcrumb-item active">{{ course.code }}</li>
+                </ol>
+            </nav>
+        </div>
+        <a href="{{ url_for('student_dashboard') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-2"></i> Back
+        </a>
+    </div>
+
+    <!-- Attendance Summary -->
+    <div class="row mb-5">
+        <div class="col-lg-6 mx-auto">
+            <div class="card shadow-sm text-center border-0">
+                <div class="card-body py-5">
+                    <div class="display-3 fw-bold text-primary">{{ percentage }}%</div>
+                    <p class="lead text-muted mb-3">
+                        {{ present_count }} out of {{ total_sessions }} sessions attended
+                    </p>
+                    <span class="badge rounded-pill fs-5 px-4 py-2 bg-{{ 'success' if percentage >= 80 else 'warning' if percentage >= 70 else 'danger' }}">
+                        {% if percentage >= 80 %}Excellent
+                        {% elif percentage >= 70 %}Good
+                        {% else %}Needs Improvement{% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mark Present Section (BIG & PROMINENT when open) -->
+    {% if active_session %}
+        <div class="text-center mb-5">
+            {% if already_marked %}
+                <div class="alert alert-success d-inline-block py-4 px-5">
+                    <i class="bi bi-check-circle-fill fs-1 mb-3 d-block"></i>
+                    <h4>You have marked present!</h4>
+                    <p class="mb-0">Session: {{ active_session.date.strftime('%d %B %Y') }}</p>
+                </div>
+            {% else %}
+                <div class="alert alert-warning d-inline-block py-4 px-5">
+                    <i class="bi bi-clock-fill fs-1 mb-3 d-block text-warning"></i>
+                    <h4>Attendance is OPEN</h4>
+                    <p class="mb-3">Session: {{ active_session.date.strftime('%d %B %Y') }}</p>
+                    <p class="mb-4">Closes at {{ active_session.end_time.strftime('%H:%M') }}</p>
+
+                    <form method="POST" action="{{ url_for('mark_present', session_id=active_session.id) }}" class="d-inline">
+                        <button type="submit" class="btn btn-success btn-lg px-5 shadow">
+                            <i class="bi bi-hand-thumbs-up-fill me-3 fs-4"></i>
+                            Mark Present Now
+                        </button>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <!-- Attendance History Table -->
+    <h4 class="fw-bold text-primary mb-4">
+        <i class="bi bi-table me-2"></i> Attendance History
+    </h4>
+
+    {% if sessions %}
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Marked At</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for session in sessions %}
+                {% set record = session_records[session.id] %}
+                <tr>
+                    <td><strong>{{ session.date.strftime('%d %B %Y') }}</strong></td>
+                    <td>
+                        {% if record %}
+                            <span class="badge bg-success">Present</span>
+                        {% else %}
+                            <span class="badge bg-danger">Absent</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ record.timestamp.strftime('%H:%M:%S') if record else '-' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center py-5">
+        <i class="bi bi-calendar-x display-4 mb-3"></i>
+        <p class="lead">No attendance sessions recorded yet for this course.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

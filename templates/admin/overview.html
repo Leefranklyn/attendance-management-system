@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Overview - Admin{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-5">
+    <div>
+        <h1 class="text-primary fw-bold mb-2">
+            <i class="bi bi-speedometer2 me-2"></i> System Overview
+        </h1>
+        <p class="text-muted lead">Welcome back, {{ current_user.name }}. Here's what's happening in your institution.</p>
+    </div>
+</div>
+
+<!-- Stats Bar - One Line, Equal Widths, Perfect Alignment -->
+<div class="row g-4 mb-5">
+    <div class="col">
+        <div class="card border-0 shadow-sm text-center py-4 h-100">
+            <i class="bi bi-building fs-1 text-primary mb-3"></i>
+            <div class="small text-muted">Faculties</div>
+            <div class="fw-bold fs-4 text-primary">{{ faculties|length }}</div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card border-0 shadow-sm text-center py-4 h-100">
+            <i class="bi bi-diagram-3 fs-1 text-info mb-3"></i>
+            <div class="small text-muted">Departments</div>
+            <div class="fw-bold fs-4 text-info">{{ departments|length }}</div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card border-0 shadow-sm text-center py-4 h-100">
+            <i class="bi bi-people fs-1 text-success mb-3"></i>
+            <div class="small text-muted">Lecturers</div>
+            <div class="fw-bold fs-4 text-success">{{ lecturers|length }}</div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card border-0 shadow-sm text-center py-4 h-100">
+            <i class="bi bi-book fs-1 text-warning mb-3"></i>
+            <div class="small text-muted">Courses</div>
+            <div class="fw-bold fs-4 text-warning">{{ courses|length }}</div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card border-0 shadow-sm text-center py-4 h-100">
+            <i class="bi bi-person-fill fs-1 text-danger mb-3"></i>
+            <div class="small text-muted">Students</div>
+            <div class="fw-bold fs-4 text-danger">{{ students|length }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<h3 class="mb-4 text-primary fw-bold">
+    <i class="bi bi-lightning-charge me-2"></i> Quick Actions
+</h3>
+<div class="row g-4">
+    <div class="col-md-3">
+        <a href="{{ url_for('admin_faculties') }}" class="text-decoration-none">
+            <div class="card border-0 shadow-sm h-100 text-center py-4 hover-lift">
+                <i class="bi bi-building fs-1 text-primary mb-3"></i>
+                <h5 class="text-primary">Manage Faculties</h5>
+                <p class="text-muted small">View and add faculties</p>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3">
+        <a href="{{ url_for('admin_lecturers') }}" class="text-decoration-none">
+            <div class="card border-0 shadow-sm h-100 text-center py-4 hover-lift">
+                <i class="bi bi-person-plus fs-1 text-success mb-3"></i>
+                <h5 class="text-success">Manage Lecturers</h5>
+                <p class="text-muted small">Register and view lecturers</p>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3">
+        <a href="{{ url_for('admin_courses') }}" class="text-decoration-none">
+            <div class="card border-0 shadow-sm h-100 text-center py-4 hover-lift">
+                <i class="bi bi-journal-plus fs-1 text-warning mb-3"></i>
+                <h5 class="text-warning">Manage Courses</h5>
+                <p class="text-muted small">Add and organize courses</p>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3">
+        <a href="{{ url_for('admin_students') }}" class="text-decoration-none">
+            <div class="card border-0 shadow-sm h-100 text-center py-4 hover-lift">
+                <i class="bi bi-people-fill fs-1 text-danger mb-3"></i>
+                <h5 class="text-danger">Manage Students</h5>
+                <p class="text-muted small">View, filter and manage students</p>
+            </div>
+        </a>
+    </div>
+</div>
+
+<style>
+    .hover-lift {
+        transition: all 0.3s ease;
+    }
+    .hover-lift:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 25px rgba(0,0,0,0.12) !important;
+    }
+</style>
+{% endblock %}

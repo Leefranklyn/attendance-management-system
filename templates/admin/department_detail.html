@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}{{ department.name }} - Levels{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-5">
+    <div>
+        <h2 class="text-primary fw-bold">
+            <i class="bi bi-diagram-3 me-2"></i> {{ department.name }}
+        </h2>
+        <p class="text-muted lead">
+            {{ department.levels }}-year program • {{ department.faculty.name }}
+        </p>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('admin_faculties') }}">Faculties</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('admin_faculty_detail', faculty_id=department.faculty.id) }}">{{ department.faculty.name }}</a></li>
+                <li class="breadcrumb-item active">{{ department.name }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<h4 class="mb-4 text-primary fw-bold">
+    <i class="bi bi-mortarboard-fill me-2"></i> Academic Levels
+</h4>
+
+<div class="list-group">
+    {% for lvl in levels %}
+        {% set level_code = lvl * 100 %}  <!-- 1 → 100, 2 → 200, etc. -->
+        {% set course_count = department.courses|selectattr('level', 'equalto', lvl)|list|length %}
+        {% set progress = (course_count / 15 * 100) if course_count > 0 else 0 %}  <!-- assuming ~15 courses per level max -->
+
+        <div class="list-group-item list-group-item-action p-4 mb-3 border-0 shadow-sm rounded-3 hover-shadow">
+            <div class="d-flex w-100 justify-content-between align-items-center">
+                <div>
+                    <h5 class="mb-1 fw-bold text-primary">
+                        {{ level_code }} Level (Year {{ lvl }})
+                    </h5>
+                    <p class="mb-1 text-muted">
+                        {{ course_count }} course{{ 's' if course_count != 1 else '' }} registered
+                    </p>
+                    <div class="progress mt-2" style="height: 8px;">
+                        <div class="progress-bar bg-success" role="progressbar" 
+                             style="width: {{ progress }}%;" 
+                             aria-valuenow="{{ progress }}" aria-valuemin="0" aria-valuemax="100">
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <a href="{{ url_for('admin_level_detail', department_id=department.id, level=lvl) }}"
+                       class="btn btn-outline-primary btn-lg px-4">
+                        <i class="bi bi-journal-text me-2"></i> View Courses
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<style>
+    .hover-shadow {
+        transition: all 0.3s ease;
+    }
+    .hover-shadow:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.12) !important;
+    }
+    .list-group-item {
+        background-color: #ffffff;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Import Students - Admin{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-primary mb-0">
+            <i class="bi bi-upload me-2"></i> Bulk Import Students via CSV
+        </h2>
+    </div>
+
+    <!-- Main Card -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+            <!-- Upload Form (visible immediately) -->
+            <h5 class="fw-bold mb-3">Upload CSV File</h5>
+            <form method="POST" enctype="multipart/form-data" class="mb-4">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-8">
+                        <input type="file" name="file" class="form-control form-control-lg" accept=".csv" required>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-success btn-lg w-100">
+                            <i class="bi bi-upload me-2"></i> Import Students
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <hr class="my-4">
+
+            <!-- Compact Instructions -->
+            <h5 class="fw-bold mb-3">CSV Format</h5>
+            <div class="bg-light rounded p-3 small">
+                <p class="mb-2"><strong>Required columns:</strong>
+                    <code>Name</code>, <code>Matric Number</code>, <code>Year of Entry</code>, <code>Department</code>, <code>Transfer</code> (optional)
+                </p>
+                <p class="mb-2"><strong>Transfer:</strong> <code>Yes</code>, <code>True</code>, <code>1</code>, or <code>Y</code> = +1 level. Blank or <code>No</code> = normal.</p>
+                <p class="mb-2"><strong>Example:</strong></p>
+                <pre class="bg-white p-2 rounded border mb-2 small overflow-auto">
+Name,Matric Number,Year of Entry,Department,Transfer
+John Doe,VUG/CSC/24/11809,2024,Computer Science,No
+Jane Smith,VUG/CSC/25/11810,2025,Computer Science,Yes
+                </pre>
+                <p class="mb-1">• Department names must match exactly</p>
+                <p class="mb-1">• Duplicates are skipped but updated</p>
+                <p class="mb-0">• Default password: <code>student123</code></p>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

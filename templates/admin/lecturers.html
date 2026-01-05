@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Lecturers - Admin{% endblock %}
+
+{% block content %}
+<h2 class="text-primary fw-bold mb-4">
+    <i class="bi bi-people me-2"></i> Manage Lecturers ({{ lecturers|length }})
+</h2>
+
+<div class="row g-4">
+    {% for lecturer in lecturers %}
+    <div class="col-md-6 col-lg-4">
+        <a href="{{ url_for('admin_lecturer_detail', lecturer_id=lecturer.id) }}" class="text-decoration-none">
+            <div class="card shadow-sm h-100 hover-lift transition border-0">
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-person-circle fs-1 text-primary mb-3"></i>
+                    <h5 class="fw-bold text-dark mb-1">{{ lecturer.name }}</h5>
+                    <p class="text-muted small mb-2">{{ lecturer.username or 'No username' }}</p>
+                    <p class="text-muted small">
+                        {% if lecturer.department %}
+                        {{ lecturer.department.faculty.name }} • {{ lecturer.department.name }}
+                        {% else %}
+                        No department assigned
+                        {% endif %}
+                    </p>
+                    <span class="badge bg-primary fs-6">{{ lecturer.course_count }} courses</span>
+                </div>
+            </div>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+
+<style>
+    .hover-lift {
+        transition: all 0.3s ease;
+    }
+    .hover-lift:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.12) !important;
+    }
+</style>
+{% endblock %}

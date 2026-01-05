@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+{% block title %}Students Management{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header with Actions -->
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <div>
+            <h2 class="text-primary fw-bold mb-1">
+                <i class="bi bi-people me-2"></i> Students Management
+            </h2>
+            <p class="text-muted">Total Students: <strong>{{ total_students }}</strong></p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('sync_enrollments') }}" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-repeat me-1"></i> Sync Enrollments
+            </a>
+            <a href="{{ url_for('import_students') }}" class="btn btn-success">
+                <i class="bi bi-upload me-1"></i> Import Students
+            </a>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <!-- Search by Name -->
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Search by Name</label>
+                    <input type="text" name="search" class="form-control" placeholder="Enter student name" 
+                           value="{{ request.args.get('search', '') }}">
+                </div>
+
+                <!-- Faculty -->
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Faculty</label>
+                    <select name="faculty_id" class="form-select" onchange="this.form.submit()">
+                        <option value="">All Faculties</option>
+                        {% for faculty in faculties %}
+                        <option value="{{ faculty.id }}" {% if selected_faculty == faculty.id %}selected{% endif %}>
+                            {{ faculty.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Department -->
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Department</label>
+                    <select name="department_id" class="form-select" onchange="this.form.submit()">
+                        <option value="">All Departments</option>
+                        {% for dept in departments %}
+                        <option value="{{ dept.id }}" {% if selected_department == dept.id %}selected{% endif %}>
+                            {{ dept.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Level (1-8) -->
+                <div class="col-md-2">
+                    <label class="form-label fw-bold">Level</label>
+                    <select name="level" class="form-select" onchange="this.form.submit()">
+                        <option value="">All Levels</option>
+                        {% for lvl in range(1, 9) %}
+                        <option value="{{ lvl }}" {% if selected_level == lvl %}selected{% endif %}>
+                            Year {{ lvl }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Students Table -->
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Name</th>
+                            <th>Matric Number</th>
+                            <th>Department</th>
+                            <th>Level</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if student_data %}
+                        {% for data in student_data %}
+                        <tr class="cursor-pointer" data-bs-toggle="modal" data-bs-target="#studentModal{{ data.student.id }}">
+                            <td class="fw-bold">{{ data.student.name }}</td>
+                            <td><code>{{ data.student.matric_number|upper }}</code></td>
+                            <td>{{ data.student.department.name if data.student.department else '—' }}</td>
+                            <td>Year {{ data.student.current_level or '?' }}</td>
+                            <td>
+                                <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#studentModal{{ data.student.id }}">
+                                    <i class="bi bi-eye"></i> View Details
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">
+                                <i class="bi bi-people display-4 mb-3 opacity-50"></i>
+                                <p>No students found.</p>
+                            </td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Student Detail Modals -->
+{% for data in student_data %}
+<div class="modal fade" id="studentModal{{ data.student.id }}" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">
+                    <i class="bi bi-person-circle me-2"></i> {{ data.student.name }}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body pt-3">
+                <p><strong>Matric Number:</strong> <code>{{ data.student.matric_number|upper }}</code></p>
+                <p><strong>Department:</strong> {{ data.student.department.name if data.student.department else 'Not assigned' }}</p>
+                <p><strong>Current Level:</strong> Year {{ data.student.current_level or '?' }}</p>
+
+                <hr class="my-4">
+
+                <h6 class="fw-bold text-primary mb-3">
+                    <i class="bi bi-journal-check me-2"></i> Enrolled Courses ({{ data.enrolled_count }})
+                </h6>
+                {% if data.course_stats %}
+                <div class="list-group list-group-flush">
+                    {% for stats in data.course_stats %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center py-3">
+                        <div>
+                            <strong>{{ stats.course.code }}</strong> — {{ stats.course.title }}
+                            <br>
+                            <small class="text-muted">
+                                {{ stats.course.level * 100 }} Level • Lecturer: {{ stats.course.lecturer.name }}
+                            </small>
+                        </div>
+                        <div class="text-end">
+                            <div class="small text-muted">{{ stats.present_count }} / {{ stats.total_sessions }} sessions</div>
+                            <div class="fw-bold fs-5 {{ 'text-success' if stats.percentage >= 75 else 'text-warning' if stats.percentage >= 50 else 'text-danger' }}">
+                                {{ stats.percentage }}%
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted">No courses enrolled yet.</p>
+                {% endif %}
+            </div>
+            <div class="modal-footer border-0">
+                <form method="POST" action="{{ url_for('delete_student', student_id=data.student.id) }}" class="d-inline">
+                    <button type="submit" class="btn btn-outline-danger" 
+                            onclick="return confirm('Permanently delete {{ data.student.name }}?')">
+                        <i class="bi bi-trash me-1"></i> Delete Student
+                    </button>
+                </form>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<style>
+    .cursor-pointer {
+        cursor: pointer;
+    }
+    .cursor-pointer:hover {
+        background-color: #f8f9fa !important;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h1 class="display-5 text-primary mb-4"><i class="bi bi-speedometer2"></i> Admin Dashboard</h1>
+    <p class="lead">Welcome, {{ current_user.name }}! Manage your institution below.</p>
+
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5><i class="bi bi-building"></i> Add Faculty</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('add_faculty') }}">
+                        <input type="text" name="name" class="form-control" placeholder="e.g. Faculty of Science" required>
+                        <button type="submit" class="btn btn-primary mt-3 w-100">Add Faculty</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5><i class="bi bi-diagram-3"></i> Add Department</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('add_department') }}">
+                        <input type="text" name="name" class="form-control mb-3" placeholder="e.g. Computer Science" required>
+                        <select name="faculty_id" class="form-select mb-3" required>
+                            <option value="">Select Faculty</option>
+                            {% for faculty in faculties %}
+                                <option value="{{ faculty.id }}">{{ faculty.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-primary w-100">Add Department</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5><i class="bi bi-person-plus"></i> Add Lecturer</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('add_lecturer') }}">
+                        <input type="text" name="name" class="form-control mb-3" placeholder="Full Name" required>
+                        <input type="text" name="username" class="form-control mb-3" placeholder="Username" required>
+                        <input type="password" name="password" class="form-control mb-3" placeholder="Password" required>
+                        <select name="department_id" class="form-select mb-3" required>
+                            <option value="">Select Department</option>
+                            {% for dept in departments %}
+                                <option value="{{ dept.id }}">{{ dept.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-primary w-100">Add Lecturer</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5><i class="bi bi-book"></i> Add Course</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('add_course') }}">
+                        <input type="text" name="code" class="form-control mb-3" placeholder="e.g. CSC101" required>
+                        <input type="text" name="title" class="form-control mb-3" placeholder="Course Title" required>
+                        <select name="department_id" class="form-select mb-3" required>
+                            <option value="">Select Department</option>
+                            {% for dept in departments %}
+                                <option value="{{ dept.id }}">{{ dept.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <select name="level" class="form-select mb-3" required>
+                            <option value="1">Year 1</option>
+                            <option value="2">Year 2</option>
+                            <option value="3">Year 3</option>
+                            <option value="4">Year 4</option>
+                        </select>
+                        <select name="lecturer_id" class="form-select mb-3" required>
+                            <option value="">Select Lecturer</option>
+                            {% for lec in lecturers %}
+                                <option value="{{ lec.id }}">{{ lec.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-primary w-100">Add Course</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="my-5">
+
+    <h3>Current Setup Summary</h3>
+    <p><strong>Faculties:</strong> {{ faculties|length }} | <strong>Departments:</strong> {{ departments|length }} | <strong>Lecturers:</strong> {{ lecturers|length }} | <strong>Courses:</strong> {{ courses|length }}</p>
+</div>
+{% endblock %}

@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+{% block title %}{{ context_title|default("Courses Management - Admin") }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="text-primary fw-bold">
+            <i class="bi bi-book me-2"></i>
+            {{ context_title|default("Courses Management") }}
+        </h2>
+        {% if context_breadcrumb %}
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                {% for name, url in context_breadcrumb %}
+                <li class="breadcrumb-item{% if not url %} active{% endif %}">
+                    {% if url %}
+                        <a href="{{ url }}">{{ name }}</a>
+                    {% else %}
+                        {{ name }}
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ol>
+        </nav>
+        {% endif %}
+    </div>
+    {% if show_add_button|default(true) %}
+    <button class="btn btn-warning btn-lg text-white" data-bs-toggle="modal" data-bs-target="#addCourseModal">
+        <i class="bi bi-journal-plus me-2"></i> Add New Course
+    </button>
+    {% endif %}
+</div>
+
+<div class="row g-4">
+    {% if courses %}
+        {% for course in courses %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 hover-shadow">
+                <div class="card-body d-flex flex-column py-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h5 class="card-title fw-bold text-primary mb-1">{{ course.code }}</h5>
+                            <h6 class="card-subtitle text-muted mb-2">{{ course.title }}</h6>
+                        </div>
+                        <span class="badge bg-primary fs-6">Year {{ course.level }}</span>
+                    </div>
+
+                    <div class="small text-muted mb-3">
+                        <i class="bi bi-mortarboard me-1"></i>
+                        <strong>Lecturer:</strong> {{ course.lecturer.name }}
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div class="small text-muted">
+                            <i class="bi bi-diagram-3 me-1"></i>
+                            {{ course.department_rel.name }}
+                        </div>
+                        <div class="badge bg-info text-dark">
+                            {{ course.enrolled_count }} enrolled
+                        </div>
+                    </div>
+
+                    <div class="mt-auto d-grid gap-2">
+                        <a href="{{ url_for('admin_course_detail', course_id=course.id) }}"
+                           class="btn btn-outline-primary">
+                            <i class="bi bi-eye me-2"></i> View Details
+                        </a>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-secondary flex-fill" data-bs-toggle="modal" data-bs-target="#editCourse{{ course.id }}">
+                                <i class="bi bi-pencil"></i> Edit
+                            </button>
+                            <form method="POST" action="{{ url_for('delete_course', course_id=course.id) }}" class="d-inline flex-fill">
+                                <button type="submit" class="btn btn-outline-danger w-100"
+                                        onclick="return confirm('Delete {{ course.code }} - {{ course.title }}? All attendance records will be lost.')">
+                                    <i class="bi bi-trash"></i> Delete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12">
+            <div class="alert alert-info text-center py-5">
+                <i class="bi bi-info-circle display-4 mb-3"></i>
+                <h4>No courses added yet</h4>
+                <p>Add courses so lecturers can start taking attendance.</p>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Add Course Modal -->
+<div class="modal fade" id="addCourseModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('add_course') }}">
+                {% if prefill_department_id %}
+                <input type="hidden" name="department_id" value="{{ prefill_department_id }}">
+                {% endif %}
+                {% if prefill_level %}
+                <input type="hidden" name="level" value="{{ prefill_level }}">
+                {% endif %}
+                <div class="modal-header bg-warning text-white">
+                    <h5 class="modal-title">Add New Course</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Course Code</label>
+                            <input type="text" name="code" class="form-control form-control-lg" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Course Title</label>
+                            <input type="text" name="title" class="form-control form-control-lg" required>
+                        </div>
+                    </div>
+                    {% if not prefill_department_id %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Department</label>
+                        <select name="department_id" class="form-select form-select-lg" required>
+                            <option value="">Select Department</option>
+                            {% for dept in departments %}
+                                <option value="{{ dept.id }}">{{ dept.name }} ({{ dept.faculty.name }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+                    {% if not prefill_level %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Level / Year</label>
+                        <select name="level" class="form-select form-select-lg" required>
+                            <option value="1">Year 1 (100 Level)</option>
+                            <option value="2">Year 2 (200 Level)</option>
+                            <option value="3">Year 3 (300 Level)</option>
+                            <option value="4">Year 4 (400 Level)</option>
+                        </select>
+                    </div>
+                    {% endif %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Assign Lecturer</label>
+                        <select name="lecturer_id" class="form-select form-select-lg" required>
+                            <option value="">Select Lecturer</option>
+                            {% for lecturer in lecturers %}
+                                <option value="{{ lecturer.id }}">{{ lecturer.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning text-white">Add Course</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Course Modals -->
+{% for course in courses %}
+<div class="modal fade" id="editCourse{{ course.id }}" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('edit_course', course_id=course.id) }}">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Course</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Course Code</label>
+                            <input type="text" name="code" value="{{ course.code }}" class="form-control form-control-lg" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Course Title</label>
+                            <input type="text" name="title" value="{{ course.title }}" class="form-control form-control-lg" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Department</label>
+                        <select name="department_id" class="form-select form-select-lg" required>
+                            {% for dept in departments %}
+                                <option value="{{ dept.id }}" {% if dept.id == course.department_id %}selected{% endif %}>
+                                    {{ dept.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Level</label>
+                        <select name="level" class="form-select form-select-lg" required>
+                            {% for i in range(1,7) %}
+                                <option value="{{ i }}" {% if i == course.level %}selected{% endif %}>Year {{ i }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Lecturer</label>
+                        <select name="lecturer_id" class="form-select form-select-lg" required>
+                            {% for lec in lecturers %}
+                                <option value="{{ lec.id }}" {% if lec.id == course.lecturer_id %}selected{% endif %}>
+                                    {{ lec.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<style>
+    .hover-shadow {
+        transition: all 0.3s ease;
+    }
+    .hover-shadow:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+    }
+</style>
+{% endblock %}
