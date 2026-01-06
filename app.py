@@ -919,25 +919,26 @@ def lecturer_course_csv(course_id):
         flash('Unauthorized.', 'danger')
         return redirect(url_for('lecturer_dashboard'))
     
-    # Get all sessions ordered by date (Week 1, Week 2...)
     sessions = AttendanceSession.query.filter_by(course_id=course_id)\
                                       .order_by(AttendanceSession.date)\
                                       .all()
     
-    # Get all enrolled students
-    students = [enrollment.student for enrollment in course.enrollments.order_by(User.name)]
+    # FIX: Get students ordered by name via explicit join
+    students = db.session.query(User)\
+        .join(Enrollment, Enrollment.student_id == User.id)\
+        .filter(Enrollment.course_id == course_id)\
+        .order_by(User.name)\
+        .all()
     
     output = StringIO()
     writer = csv.writer(output)
     
-    # Header Row 1: Matric, Name, Week 1, Week 2..., Total Present, Percentage
     header = ['Matric Number', 'Student Name']
     for idx, session in enumerate(sessions, 1):
         header.append(f'Week {idx} ({session.date.strftime("%d %b %Y")})')
     header += ['Total Present', 'Percentage']
     writer.writerow(header)
     
-    # Data rows
     total_sessions = len(sessions)
     for student in students:
         row = [student.matric_number or 'N/A', student.name]
